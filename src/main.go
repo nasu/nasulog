@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/nasu/nasulog/domain/article"
+	"github.com/nasu/nasulog/domain/graphql"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -14,5 +15,6 @@ func main() {
 	}))
 
 	article.Route(e)
+	graphql.Route(e)
 	e.Start(":8080")
 }

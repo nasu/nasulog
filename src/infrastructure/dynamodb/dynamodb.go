@@ -8,8 +8,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
-// GetClient is initializing and getting a client.
-func GetClient(ctx context.Context) (*dynamodb.Client, error) {
+// DB is a struct for database.
+type DB struct {
+	Client *dynamodb.Client
+}
+
+// GetDB gets DB struct.
+func GetDB(ctx context.Context) (*DB, error) {
 	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
 		if service == dynamodb.ServiceID {
 			return aws.Endpoint{
@@ -26,5 +31,5 @@ func GetClient(ctx context.Context) (*dynamodb.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return dynamodb.NewFromConfig(cfg), nil
+	return &DB{dynamodb.NewFromConfig(cfg)}, nil
 }

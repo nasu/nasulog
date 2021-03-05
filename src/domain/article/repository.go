@@ -26,10 +26,10 @@ func selectOne(ctx context.Context, client *dynamodb.Client, id string) (*Articl
 	if err != nil {
 		return nil, err
 	}
-	return new(Article).WithDynamoDbItems(res.Item), nil
+	return NewArticleWithAttributeValue(res.Item), nil
 }
 
-func selectAll(ctx context.Context, client *dynamodb.Client) ([]*Article, error) {
+func SelectAll(ctx context.Context, client *dynamodb.Client) ([]*Article, error) {
 	res, err := client.Scan(ctx, &dynamodb.ScanInput{
 		TableName:      &tableName,
 		ConsistentRead: &consistentRead,
@@ -41,12 +41,12 @@ func selectAll(ctx context.Context, client *dynamodb.Client) ([]*Article, error)
 
 	articles := make([]*Article, res.Count, res.Count)
 	for i := 0; i < int(res.Count); i++ {
-		articles[i] = new(Article).WithDynamoDbItems(res.Items[i])
+		articles[i] = NewArticleWithAttributeValue(res.Items[i])
 	}
 	return articles, nil
 }
 
-func insert(ctx context.Context, client *dynamodb.Client, article *Article) (*Article, error) {
+func Insert(ctx context.Context, client *dynamodb.Client, article *Article) (*Article, error) {
 	now := time.Now()
 	if article.CreatedAt.IsZero() {
 		article.CreatedAt = now
@@ -75,5 +75,5 @@ func insert(ctx context.Context, client *dynamodb.Client, article *Article) (*Ar
 	if err != nil {
 		return nil, err
 	}
-	return new(Article).WithDynamoDbItems(item), nil
+	return NewArticleWithAttributeValue(item), nil
 }

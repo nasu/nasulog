@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// Route set echo route.
+// Route sets echo route.
 func Route(e *echo.Echo) {
 	e.GET("/article", all)
 	e.GET("/article/:id", one)
@@ -24,13 +24,13 @@ func one(c echo.Context) error {
 	ctx := context.TODO()
 	id := c.Param("id")
 
-	client, err := dynamodb.GetClient(ctx)
+	db, err := dynamodb.GetDB(ctx)
 	if err != nil {
 		log.Printf("unable to load SDK config, %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	article, err := selectOne(ctx, client, id)
+	article, err := selectOne(ctx, db.Client, id)
 	if err != nil {
 		log.Printf("failed to get article, %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
@@ -40,13 +40,13 @@ func one(c echo.Context) error {
 
 func all(c echo.Context) error {
 	ctx := context.TODO()
-	client, err := dynamodb.GetClient(ctx)
+	db, err := dynamodb.GetDB(ctx)
 	if err != nil {
 		log.Printf("unable to load SDK config, %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	articles, err := selectAll(ctx, client)
+	articles, err := SelectAll(ctx, db.Client)
 	if err != nil {
 		log.Printf("failed to get articles, %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
@@ -63,13 +63,13 @@ func create(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	client, err := dynamodb.GetClient(ctx)
+	db, err := dynamodb.GetDB(ctx)
 	if err != nil {
 		log.Printf("unable to load SDK config, %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	insertedArticle, err := insert(ctx, client, &article)
+	insertedArticle, err := Insert(ctx, db.Client, &article)
 	if err != nil {
 		log.Printf("failed to insert an article, %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
