@@ -29,6 +29,7 @@ func selectOne(ctx context.Context, client *dynamodb.Client, id string) (*Articl
 	return NewArticleWithAttributeValue(res.Item), nil
 }
 
+// SelectAll gets all articles.
 func SelectAll(ctx context.Context, client *dynamodb.Client) ([]*Article, error) {
 	res, err := client.Scan(ctx, &dynamodb.ScanInput{
 		TableName:      &tableName,
@@ -46,6 +47,7 @@ func SelectAll(ctx context.Context, client *dynamodb.Client) ([]*Article, error)
 	return articles, nil
 }
 
+// Insert inserts an article to DB.
 func Insert(ctx context.Context, client *dynamodb.Client, article *Article) (*Article, error) {
 	now := time.Now()
 	if article.CreatedAt.IsZero() {
@@ -59,9 +61,11 @@ func Insert(ctx context.Context, client *dynamodb.Client, article *Article) (*Ar
 	item["id"] = &types.AttributeValueMemberS{Value: uuid.NewString()}
 	item["title"] = &types.AttributeValueMemberS{Value: article.Title}
 	item["content"] = &types.AttributeValueMemberS{Value: article.Content}
+	item["tags"] = &types.AttributeValueMemberSS{Value: article.Tags}
 	item["created_at"] = &types.AttributeValueMemberS{Value: article.CreatedAt.Format(time.RFC3339)}
 	item["updated_at"] = &types.AttributeValueMemberS{Value: article.UpdatedAt.Format(time.RFC3339)}
 
+	//TODO: use dynamodb.DB.InsertXXXX.
 	conditionExpression := "attribute_not_exists(id)"
 	params := &dynamodb.PutItemInput{
 		TableName: &tableName,

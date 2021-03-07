@@ -13,6 +13,13 @@ dynamodb-start:
 			AttributeName=id,AttributeType=S \
 		--key-schema \
 			AttributeName=id,KeyType=HASH
+	aws dynamodb create-table --endpoint-url $(DYNAMODB_ENDPOINT) \
+		--billing-mode PAY_PER_REQUEST \
+		--table-name tags \
+		--attribute-definitions \
+			AttributeName=name,AttributeType=S \
+		--key-schema \
+			AttributeName=name,KeyType=HASH
 	aws dynamodb put-item --endpoint-url $(DYNAMODB_ENDPOINT) \
 		--table-name articles \
 		--item '{

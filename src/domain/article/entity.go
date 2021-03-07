@@ -12,6 +12,7 @@ type Article struct {
 	ID        string
 	Title     string
 	Content   string
+	Tags      []string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -29,6 +30,9 @@ func NewArticleWithAttributeValue(values map[string]types.AttributeValue) *Artic
 	}
 	if v, ok := values["content"].(*types.AttributeValueMemberS); ok {
 		article.Content = v.Value
+	}
+	if v, ok := values["tags"].(*types.AttributeValueMemberSS); ok {
+		article.Tags = v.Value
 	}
 	if v, ok := values["created_at"].(*types.AttributeValueMemberS); ok {
 		article.CreatedAt, err = time.Parse(time.RFC3339, v.Value)

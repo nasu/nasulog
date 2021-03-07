@@ -2,17 +2,24 @@ type Article {
   id: ID!
   title: String!
   content: String!
+  tags: [String!]!
   created_at: String!
   updated_at: String!
 }
 
+type Tag {
+  name: ID!
+}
+
 type Query {
   articles: [Article!]!
+  tags: [String!]!
 }
 
 input NewArticle {
   title: String!
   content: String!
+  tags: [String!]
 }
 
 type Mutation {
