@@ -1,10 +1,13 @@
 package article
 
+//TODO: write test
+
 import (
 	"log"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/google/uuid"
 )
 
 // Article is an entity of an article.
@@ -18,8 +21,11 @@ type Article struct {
 }
 
 // NewArticleWithAttributeValue creates an Article with dyannamodb.types.AttributeValue
-//TODO: write test
 func NewArticleWithAttributeValue(values map[string]types.AttributeValue) *Article {
+	if len(values) == 0 {
+		return nil
+	}
+
 	article := &Article{}
 	var err error
 	if v, ok := values["id"].(*types.AttributeValueMemberS); ok {
@@ -47,4 +53,20 @@ func NewArticleWithAttributeValue(values map[string]types.AttributeValue) *Artic
 		}
 	}
 	return article
+}
+
+// ToAttributeValue converts to attribute value.
+func (article Article) ToAttributeValue() map[string]types.AttributeValue {
+	item := make(map[string]types.AttributeValue)
+	if article.ID == "" {
+		item["id"] = &types.AttributeValueMemberS{Value: uuid.NewString()}
+	} else {
+		item["id"] = &types.AttributeValueMemberS{Value: article.ID}
+	}
+	item["title"] = &types.AttributeValueMemberS{Value: article.Title}
+	item["content"] = &types.AttributeValueMemberS{Value: article.Content}
+	item["tags"] = &types.AttributeValueMemberSS{Value: article.Tags}
+	item["created_at"] = &types.AttributeValueMemberS{Value: article.CreatedAt.Format(time.RFC3339)}
+	item["updated_at"] = &types.AttributeValueMemberS{Value: article.UpdatedAt.Format(time.RFC3339)}
+	return item
 }

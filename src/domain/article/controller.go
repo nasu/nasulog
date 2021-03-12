@@ -30,7 +30,7 @@ func one(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	article, err := selectOne(ctx, db.Client, id)
+	article, err := SelectByPK(ctx, db, id)
 	if err != nil {
 		log.Printf("failed to get article, %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
@@ -46,7 +46,7 @@ func all(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	articles, err := SelectAll(ctx, db.Client)
+	articles, err := SelectAll(ctx, db)
 	if err != nil {
 		log.Printf("failed to get articles, %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
@@ -69,7 +69,7 @@ func create(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	insertedArticle, err := Insert(ctx, db.Client, &article)
+	insertedArticle, err := Insert(ctx, db, &article)
 	if err != nil {
 		log.Printf("failed to insert an article, %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)

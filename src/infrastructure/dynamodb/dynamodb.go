@@ -36,6 +36,19 @@ func GetDB(ctx context.Context) (*DB, error) {
 	return &DB{dynamodb.NewFromConfig(cfg)}, nil
 }
 
+// SelectByPK gets one data with primary keys.
+func (db DB) SelectByPK(ctx context.Context, tableName string, key map[string]types.AttributeValue, consistentRead bool) (map[string]types.AttributeValue, error) {
+	res, err := db.Client.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName:      &tableName,
+		Key:            key,
+		ConsistentRead: &consistentRead,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res.Item, nil
+}
+
 // SelectAll gets all data.
 func (db DB) SelectAll(ctx context.Context, tableName string) ([]map[string]types.AttributeValue, error) {
 	statement := fmt.Sprintf("SELECT * FROM %s", tableName)
@@ -70,6 +83,18 @@ func (db DB) Insert(ctx context.Context, tableName string, item map[string]types
 		ConditionExpression: &conditionExpression,
 	}
 	return db.putItem(ctx, params)
+}
+
+// DeleteByPK deletes an item with pk.
+func (db DB) DeleteByPK(ctx context.Context, tableName string, key map[string]types.AttributeValue) error {
+	_, err := db.Client.DeleteItem(ctx, &dynamodb.DeleteItemInput{
+		TableName: &tableName,
+		Key:       key,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (db DB) upsert(ctx context.Context, tableName string, item map[string]types.AttributeValue) error {

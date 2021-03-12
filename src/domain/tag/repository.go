@@ -37,3 +37,11 @@ func InsertMulti(ctx context.Context, db *dynamodb.DB, names []string) error {
 	}
 	return db.UpsertMulti(ctx, tableName, items)
 }
+
+// DeleteByPK deletes an article with name.
+func DeleteByPK(ctx context.Context, db *dynamodb.DB, name string) error {
+	key := map[string]types.AttributeValue{
+		"name": &types.AttributeValueMemberS{Value: name},
+	}
+	return db.DeleteByPK(ctx, tableName, key)
+}

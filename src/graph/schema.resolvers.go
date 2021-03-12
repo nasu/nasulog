@@ -17,7 +17,7 @@ import (
 
 func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArticle) (*model.Article, error) {
 	//TODO: transaction
-	entity, err := article.Insert(ctx, r.DB.Client, &article.Article{
+	entity, err := article.Insert(ctx, r.DB, &article.Article{
 		ID:      uuid.NewString(),
 		Title:   input.Title,
 		Content: input.Content,
@@ -42,8 +42,20 @@ func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArt
 	}, nil
 }
 
+func (r *mutationResolver) DeleteArticle(ctx context.Context, id string) (*bool, error) {
+	err := article.DeleteByPK(ctx, r.DB, id)
+	res := true
+	return &res, err
+}
+
+func (r *mutationResolver) DeleteTag(ctx context.Context, name string) (*bool, error) {
+	err := tag.DeleteByPK(ctx, r.DB, name)
+	res := true
+	return &res, err
+}
+
 func (r *queryResolver) Articles(ctx context.Context) ([]*model.Article, error) {
-	entities, err := article.SelectAll(ctx, r.DB.Client)
+	entities, err := article.SelectAll(ctx, r.DB)
 	if err != nil {
 		return nil, err
 	}

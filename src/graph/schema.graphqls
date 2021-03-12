@@ -24,4 +24,6 @@ input NewArticle {
 
 type Mutation {
   createArticle(input: NewArticle!): Article!
+  deleteArticle(id: String!): Boolean
+  deleteTag(name: String!): Boolean
 }
