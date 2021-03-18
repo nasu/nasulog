@@ -75,13 +75,22 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
+        env:
+        - name: DYNAMODB_URL
+          value: http://dynamodb:9000
+        - name: SQS_URL
+          value: http://elasticmq:9324
+        - name: AWS_ACCESS_KEY_ID
+          value: AKIA0000000000000000
+        - name: AWS_SECRET_ACCESS_KEY
+          value: s7C0000000000000000000000000000000000000
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: elasticmq
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
   - port: 9324
   selector:
@@ -92,7 +101,7 @@ kind: Service
 metadata:
   name: dynamodb
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
   - port: 9000
   selector:

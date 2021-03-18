@@ -1,6 +1,6 @@
 #!/bin/sh
 eval $(minikube -p minikube docker-env)
-docker build -t nasu/nasulog:v0.1 ../src/
+docker build -t nasu/nasulog:v0.1 ../api/
 kubectl apply -f deployment.yaml
 
 ### TODO: これ良くないよ
