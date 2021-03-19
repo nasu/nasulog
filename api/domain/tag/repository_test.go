@@ -30,9 +30,9 @@ func TestInsertMultiAndDeleteByPK(t *testing.T) {
 	}
 
 	// insert
-	tags := []string{
-		"unit-test-" + uuid.NewString(),
-		"unit-test-" + uuid.NewString()}
+	tags := []*Tag{
+		&Tag{"unit-test-" + uuid.NewString(), []string{}},
+		&Tag{"unit-test-" + uuid.NewString(), []string{}}}
 	if err := InsertMulti(ctx, db, tags); err != nil {
 		t.Fatalf("failed to insert multi. err=%v", err)
 	}
@@ -43,11 +43,11 @@ func TestInsertMultiAndDeleteByPK(t *testing.T) {
 	} else {
 		tagMap := make(map[string]bool)
 		for _, tag := range tags {
-			tagMap[tag] = true
+			tagMap[tag.Name] = true
 		}
 		cnt := 0
 		for _, tag := range got {
-			if _, ok := tagMap[tag]; ok {
+			if _, ok := tagMap[tag.Name]; ok {
 				cnt++
 			}
 		}
@@ -58,7 +58,7 @@ func TestInsertMultiAndDeleteByPK(t *testing.T) {
 
 	// delete
 	for _, tag := range tags {
-		if err := DeleteByPK(ctx, db, tag); err != nil {
+		if err := DeleteByPK(ctx, db, tag.Name); err != nil {
 			t.Fatalf("failed to delete. err=%v", err)
 		}
 	}
@@ -67,11 +67,11 @@ func TestInsertMultiAndDeleteByPK(t *testing.T) {
 	} else {
 		tagMap := make(map[string]bool)
 		for _, tag := range tags {
-			tagMap[tag] = true
+			tagMap[tag.Name] = true
 		}
 		cnt := 0
 		for _, tag := range got {
-			if _, ok := tagMap[tag]; ok {
+			if _, ok := tagMap[tag.Name]; ok {
 				cnt++
 			}
 		}

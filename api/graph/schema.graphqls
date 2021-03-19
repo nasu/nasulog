@@ -9,11 +9,12 @@ type Article {
 
 type Tag {
   name: ID!
+  articles: [String!]!
 }
 
 type Query {
   articles: [Article!]!
-  tags: [String!]!
+  tags: [Tag!]!
 }
 
 input NewArticle {

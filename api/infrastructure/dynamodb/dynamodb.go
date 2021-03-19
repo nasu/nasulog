@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -23,7 +24,7 @@ var (
 
 func init() {
 	if val, ok := os.LookupEnv("DYNAMODB_URL"); !ok {
-		log.Fatalln("require DYNAMODB_URL")
+		log.Fatalln("require ENV:DYNAMODB_URL")
 	} else {
 		DYNAMODB_URL = val
 		log.Println("DYNAMODB_URL:" + DYNAMODB_URL)
@@ -65,12 +66,38 @@ func (db DB) SelectByPK(ctx context.Context, tableName string, key map[string]ty
 }
 
 // SelectAll gets all data.
-func (db DB) SelectAll(ctx context.Context, tableName string) ([]map[string]types.AttributeValue, error) {
-	statement := fmt.Sprintf("SELECT * FROM %s", tableName)
-	params := &dynamodb.ExecuteStatementInput{
-		Statement: &statement,
+func (db DB) SelectAll(ctx context.Context, tableName, partitionKey string) ([]map[string]types.AttributeValue, error) {
+	statement := fmt.Sprintf("SELECT * FROM %s WHERE partition_key=?", tableName)
+	params := []types.AttributeValue{&types.AttributeValueMemberS{Value: partitionKey}}
+	input := &dynamodb.ExecuteStatementInput{
+		Statement:  &statement,
+		Parameters: params,
 	}
-	res, err := db.Client.ExecuteStatement(ctx, params)
+	res, err := db.Client.ExecuteStatement(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+	//TODO: check NextToken
+	return res.Items, nil
+}
+
+// SelectBySortKeys gets data with partition_key and multi sort_key
+func (db DB) SelectBySortKeys(ctx context.Context, tableName, partitionKey string, sortKeys []string) ([]map[string]types.AttributeValue, error) {
+	params := []types.AttributeValue{&types.AttributeValueMemberS{Value: partitionKey}}
+
+	placeHolders := make([]string, len(sortKeys), len(sortKeys))
+	for i, key := range sortKeys {
+		placeHolders[i] = "?"
+		params = append(params, &types.AttributeValueMemberS{Value: key})
+	}
+	sortKeyPlaceHolder := strings.Join(placeHolders, ",")
+	statement := fmt.Sprintf("SELECT * FROM %s WHERE partition_key=? AND sort_key IN [%s]", tableName, sortKeyPlaceHolder)
+
+	input := &dynamodb.ExecuteStatementInput{
+		Statement:  &statement,
+		Parameters: params,
+	}
+	res, err := db.Client.ExecuteStatement(ctx, input)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +108,11 @@ func (db DB) SelectAll(ctx context.Context, tableName string) ([]map[string]type
 // UpsertMulti upserts for multi items in bulk.
 func (db DB) UpsertMulti(ctx context.Context, tableName string, items []map[string]types.AttributeValue) error {
 	for _, item := range items {
-		err := db.upsert(ctx, tableName, item)
+		params := &dynamodb.PutItemInput{
+			TableName: &tableName,
+			Item:      item,
+		}
+		err := db.putItem(ctx, params)
 		if err != nil {
 			return err
 		}

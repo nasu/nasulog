@@ -27,8 +27,7 @@ func NewArticleWithAttributeValue(values map[string]types.AttributeValue) *Artic
 	}
 
 	article := &Article{}
-	var err error
-	if v, ok := values["id"].(*types.AttributeValueMemberS); ok {
+	if v, ok := values["sort_key"].(*types.AttributeValueMemberS); ok {
 		article.ID = v.Value
 	}
 	if v, ok := values["title"].(*types.AttributeValueMemberS); ok {
@@ -41,12 +40,14 @@ func NewArticleWithAttributeValue(values map[string]types.AttributeValue) *Artic
 		article.Tags = v.Value
 	}
 	if v, ok := values["created_at"].(*types.AttributeValueMemberS); ok {
+		var err error
 		article.CreatedAt, err = time.Parse(time.RFC3339, v.Value)
 		if err != nil {
 			log.Printf("Failed to convert created_at, %v", err)
 		}
 	}
 	if v, ok := values["updated_at"].(*types.AttributeValueMemberS); ok {
+		var err error
 		article.UpdatedAt, err = time.Parse(time.RFC3339, v.Value)
 		if err != nil {
 			log.Printf("Failed to convert updated_at, %v", err)
@@ -58,10 +59,11 @@ func NewArticleWithAttributeValue(values map[string]types.AttributeValue) *Artic
 // ToAttributeValue converts to attribute value.
 func (article Article) ToAttributeValue() map[string]types.AttributeValue {
 	item := make(map[string]types.AttributeValue)
+	item["partition_key"] = &types.AttributeValueMemberS{Value: "article"}
 	if article.ID == "" {
-		item["id"] = &types.AttributeValueMemberS{Value: uuid.NewString()}
+		item["sort_key"] = &types.AttributeValueMemberS{Value: uuid.NewString()}
 	} else {
-		item["id"] = &types.AttributeValueMemberS{Value: article.ID}
+		item["sort_key"] = &types.AttributeValueMemberS{Value: article.ID}
 	}
 	item["title"] = &types.AttributeValueMemberS{Value: article.Title}
 	item["content"] = &types.AttributeValueMemberS{Value: article.Content}

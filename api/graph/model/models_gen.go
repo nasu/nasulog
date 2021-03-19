@@ -18,5 +18,6 @@ type NewArticle struct {
 }
 
 type Tag struct {
-	Name string `json:"name"`
+	Name     string   `json:"name"`
+	Articles []string `json:"articles"`
 }

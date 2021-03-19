@@ -9,7 +9,7 @@ import (
 	mydb "github.com/nasu/nasulog/infrastructure/dynamodb"
 )
 
-var tableName = "articles"
+var tableName = "blog"
 var consistentRead = true
 var scanLimit = int32(10)
 
@@ -28,7 +28,7 @@ func SelectByPK(ctx context.Context, db *mydb.DB, id string) (*Article, error) {
 
 // SelectAll gets all articles.
 func SelectAll(ctx context.Context, db *mydb.DB) ([]*Article, error) {
-	items, err := db.SelectAll(ctx, tableName)
+	items, err := db.SelectAll(ctx, tableName, "article")
 	if err != nil {
 		return nil, err
 	}

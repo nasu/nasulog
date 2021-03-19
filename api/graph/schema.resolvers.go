@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,9 +25,27 @@ func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArt
 	if err != nil {
 		return nil, err
 	}
-	log.Println("insert")
 
-	if err := tag.InsertMulti(ctx, r.DB, input.Tags); err != nil {
+	tags, err := tag.SelectByNames(ctx, r.DB, input.Tags)
+	if err != nil {
+		return nil, err
+	}
+	tagsMap := make(map[string]*tag.Tag)
+	for _, t := range tags {
+		tagsMap[t.Name] = t
+	}
+	for _, it := range input.Tags {
+		if et, ok := tagsMap[it]; ok {
+			et.Articles = append(et.Articles, entity.ID)
+		} else {
+			tags = append(tags, &tag.Tag{
+				Name:     it,
+				Articles: []string{entity.ID},
+			})
+		}
+	}
+
+	if err := tag.InsertMulti(ctx, r.DB, tags); err != nil {
 		return nil, err
 	}
 
@@ -60,8 +77,7 @@ func (r *queryResolver) Articles(ctx context.Context) ([]*model.Article, error) 
 		return nil, err
 	}
 	models := make([]*model.Article, len(entities), len(entities))
-	for i := 0; i < len(entities); i++ {
-		entity := entities[i]
+	for i, entity := range entities {
 		models[i] = &model.Article{
 			ID:        entity.ID,
 			Title:     entity.Title,
@@ -74,8 +90,19 @@ func (r *queryResolver) Articles(ctx context.Context) ([]*model.Article, error) 
 	return models, nil
 }
 
-func (r *queryResolver) Tags(ctx context.Context) ([]string, error) {
-	return tag.SelectAll(ctx, r.DB)
+func (r *queryResolver) Tags(ctx context.Context) ([]*model.Tag, error) {
+	entities, err := tag.SelectAll(ctx, r.DB)
+	if err != nil {
+		return nil, err
+	}
+	models := make([]*model.Tag, len(entities), len(entities))
+	for i, entity := range entities {
+		models[i] = &model.Tag{
+			Name:     entity.Name,
+			Articles: entity.Articles,
+		}
+	}
+	return models, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

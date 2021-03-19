@@ -8,32 +8,41 @@ import (
 	"github.com/nasu/nasulog/infrastructure/dynamodb"
 )
 
-var tableName = "tags"
+var tableName = "blog"
 
 // SelectAll gets all tags.
-func SelectAll(ctx context.Context, db *dynamodb.DB) ([]string, error) {
-	items, err := db.SelectAll(ctx, tableName)
+func SelectAll(ctx context.Context, db *dynamodb.DB) ([]*Tag, error) {
+	items, err := db.SelectAll(ctx, tableName, "tag")
 	if err != nil {
 		return nil, err
 	}
 
-	tags := make([]string, len(items), len(items))
+	tags := make([]*Tag, len(items), len(items))
 	for i, item := range items {
-		if v, ok := item["name"].(*types.AttributeValueMemberS); ok {
-			tags[i] = v.Value
-		}
+		tags[i] = NewTagWithAttributeValue(item)
+	}
+	return tags, nil
+}
+
+// SelectByNames gets tags with names.
+func SelectByNames(ctx context.Context, db *dynamodb.DB, names []string) ([]*Tag, error) {
+	items, err := db.SelectBySortKeys(ctx, tableName, "tag", names)
+	if err != nil {
+		return nil, err
+	}
+
+	tags := make([]*Tag, len(items), len(items))
+	for i, item := range items {
+		tags[i] = NewTagWithAttributeValue(item)
 	}
 	return tags, nil
 }
 
 // InsertMulti inserts all tags received.
-func InsertMulti(ctx context.Context, db *dynamodb.DB, names []string) error {
-	items := make([]map[string]types.AttributeValue, len(names), len(names))
-	for i, name := range names {
-		item := make(map[string]types.AttributeValue)
-		item["name"] = &types.AttributeValueMemberS{Value: name}
-
-		items[i] = item
+func InsertMulti(ctx context.Context, db *dynamodb.DB, tags []*Tag) error {
+	items := make([]map[string]types.AttributeValue, len(tags), len(tags))
+	for i, t := range tags {
+		items[i] = t.ToAttributeValue()
 	}
 	return db.UpsertMulti(ctx, tableName, items)
 }
