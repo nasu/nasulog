@@ -74,7 +74,7 @@ func TestInsertAndDeleteByPK(t *testing.T) {
 	}
 
 	// delete
-	if DeleteByPK(ctx, db, entity.ID) != nil {
+	if DeleteByID(ctx, db, entity.ID) != nil {
 		t.Fatalf("failed to delete an entity. err=%v", err)
 	}
 	got, err = SelectByPK(ctx, db, entity.ID)

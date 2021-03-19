@@ -58,7 +58,7 @@ func TestInsertMultiAndDeleteByPK(t *testing.T) {
 
 	// delete
 	for _, tag := range tags {
-		if err := DeleteByPK(ctx, db, tag.Name); err != nil {
+		if err := DeleteByName(ctx, db, tag.Name); err != nil {
 			t.Fatalf("failed to delete. err=%v", err)
 		}
 	}

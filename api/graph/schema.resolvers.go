@@ -60,13 +60,13 @@ func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArt
 }
 
 func (r *mutationResolver) DeleteArticle(ctx context.Context, id string) (*bool, error) {
-	err := article.DeleteByPK(ctx, r.DB, id)
+	err := article.DeleteByID(ctx, r.DB, id)
 	res := true
 	return &res, err
 }
 
 func (r *mutationResolver) DeleteTag(ctx context.Context, name string) (*bool, error) {
-	err := tag.DeleteByPK(ctx, r.DB, name)
+	err := tag.DeleteByName(ctx, r.DB, name)
 	res := true
 	return &res, err
 }

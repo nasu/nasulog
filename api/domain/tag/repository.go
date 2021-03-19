@@ -9,10 +9,11 @@ import (
 )
 
 var tableName = "blog"
+var partitionKey = "tag"
 
 // SelectAll gets all tags.
 func SelectAll(ctx context.Context, db *dynamodb.DB) ([]*Tag, error) {
-	items, err := db.SelectAll(ctx, tableName, "tag")
+	items, err := db.SelectAll(ctx, tableName, partitionKey)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +27,7 @@ func SelectAll(ctx context.Context, db *dynamodb.DB) ([]*Tag, error) {
 
 // SelectByNames gets tags with names.
 func SelectByNames(ctx context.Context, db *dynamodb.DB, names []string) ([]*Tag, error) {
-	items, err := db.SelectBySortKeys(ctx, tableName, "tag", names)
+	items, err := db.SelectBySortKeys(ctx, tableName, partitionKey, names)
 	if err != nil {
 		return nil, err
 	}
@@ -47,10 +48,11 @@ func InsertMulti(ctx context.Context, db *dynamodb.DB, tags []*Tag) error {
 	return db.UpsertMulti(ctx, tableName, items)
 }
 
-// DeleteByPK deletes an article with name.
-func DeleteByPK(ctx context.Context, db *dynamodb.DB, name string) error {
+// DeleteByName deletes an article with name.
+func DeleteByName(ctx context.Context, db *dynamodb.DB, name string) error {
 	key := map[string]types.AttributeValue{
-		"name": &types.AttributeValueMemberS{Value: name},
+		"partition_key": &types.AttributeValueMemberS{Value: partitionKey},
+		"sort_key":      &types.AttributeValueMemberS{Value: name},
 	}
 	return db.DeleteByPK(ctx, tableName, key)
 }

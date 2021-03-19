@@ -10,6 +10,7 @@ import (
 )
 
 var tableName = "blog"
+var partitionKey = "article"
 var consistentRead = true
 var scanLimit = int32(10)
 
@@ -28,7 +29,7 @@ func SelectByPK(ctx context.Context, db *mydb.DB, id string) (*Article, error) {
 
 // SelectAll gets all articles.
 func SelectAll(ctx context.Context, db *mydb.DB) ([]*Article, error) {
-	items, err := db.SelectAll(ctx, tableName, "article")
+	items, err := db.SelectAll(ctx, tableName, partitionKey)
 	if err != nil {
 		return nil, err
 	}
@@ -58,10 +59,11 @@ func Insert(ctx context.Context, db *mydb.DB, article *Article) (*Article, error
 	return NewArticleWithAttributeValue(item), nil
 }
 
-// DeleteByPK deletes an article with id.
-func DeleteByPK(ctx context.Context, db *mydb.DB, id string) error {
+// DeleteByID deletes an article with id.
+func DeleteByID(ctx context.Context, db *mydb.DB, id string) error {
 	key := map[string]types.AttributeValue{
-		"id": &types.AttributeValueMemberS{Value: id},
+		"partition_key": &types.AttributeValueMemberS{Value: partitionKey},
+		"sort_key":      &types.AttributeValueMemberS{Value: id},
 	}
 	return db.DeleteByPK(ctx, tableName, key)
 }
