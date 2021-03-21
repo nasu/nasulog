@@ -16,7 +16,7 @@ func TestInsertAndSelectByPK(t *testing.T) {
 	}
 
 	// case: no hit
-	entity, err := SelectByPK(ctx, db, uuid.NewString())
+	entity, err := SelectByID(ctx, db, uuid.NewString())
 	if err != nil {
 		t.Fatalf("failed to get an entity. err=%v", err)
 	}
@@ -29,7 +29,7 @@ func TestInsertAndSelectByPK(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to insert an entity. err=%v", err)
 	}
-	got, err := SelectByPK(ctx, db, entity.ID)
+	got, err := SelectByID(ctx, db, entity.ID)
 	if err != nil {
 		t.Fatalf("failed to get an entity. err=%v", err)
 	}
@@ -65,7 +65,7 @@ func TestInsertAndDeleteByPK(t *testing.T) {
 	}
 
 	// confirmation
-	got, err := SelectByPK(ctx, db, entity.ID)
+	got, err := SelectByID(ctx, db, entity.ID)
 	if err != nil {
 		t.Fatalf("failed to get an entity. err=%v", err)
 	}
@@ -77,7 +77,7 @@ func TestInsertAndDeleteByPK(t *testing.T) {
 	if DeleteByID(ctx, db, entity.ID) != nil {
 		t.Fatalf("failed to delete an entity. err=%v", err)
 	}
-	got, err = SelectByPK(ctx, db, entity.ID)
+	got, err = SelectByID(ctx, db, entity.ID)
 	if err != nil {
 		t.Fatalf("failed to get an entity")
 	}

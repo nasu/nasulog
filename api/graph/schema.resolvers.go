@@ -60,13 +60,72 @@ func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArt
 }
 
 func (r *mutationResolver) DeleteArticle(ctx context.Context, id string) (*bool, error) {
-	err := article.DeleteByID(ctx, r.DB, id)
+	entity, err := article.SelectByID(ctx, r.DB, id)
+	if err != nil {
+		return nil, err
+	}
+	if entity == nil {
+		res := false
+		return &res, nil
+	}
+
+	// Remove an article matched to the article from tag.articles
+	tags, err := tag.SelectByNames(ctx, r.DB, entity.Tags)
+	if err != nil {
+		return nil, err
+	}
+	for _, t := range tags {
+		for i, a := range t.Articles {
+			if a == id {
+				t.Articles = append(t.Articles[:i], t.Articles[i+1:]...)
+				break
+			}
+		}
+	}
+
+	if err := article.DeleteByID(ctx, r.DB, id); err != nil {
+		return nil, err
+	}
+	if err := tag.UpsertMulti(ctx, r.DB, tags); err != nil {
+		return nil, err
+	}
+
 	res := true
 	return &res, err
 }
 
 func (r *mutationResolver) DeleteTag(ctx context.Context, name string) (*bool, error) {
-	err := tag.DeleteByName(ctx, r.DB, name)
+	entity, err := tag.SelectByName(ctx, r.DB, name)
+	if err != nil {
+		return nil, err
+	}
+	if entity == nil {
+		res := false
+		return &res, nil
+	}
+
+	// Remove a tag matched to the tag from article.tags
+	articles, err := article.SelectByIDs(ctx, r.DB, entity.Articles)
+	if err != nil {
+		return nil, err
+	}
+	for _, a := range articles {
+		for i, t := range a.Tags {
+			if t == name {
+				a.Tags = append(a.Tags[:i], a.Tags[i+1:]...)
+				break
+			}
+		}
+	}
+
+	// transaction
+	if err := tag.DeleteByName(ctx, r.DB, name); err != nil {
+		return nil, err
+	}
+	if err := article.UpsertMulti(ctx, r.DB, articles); err != nil {
+		return nil, err
+	}
+
 	res := true
 	return &res, err
 }

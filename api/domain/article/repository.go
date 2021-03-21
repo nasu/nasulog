@@ -14,17 +14,30 @@ var partitionKey = "article"
 var consistentRead = true
 var scanLimit = int32(10)
 
-// SelectByPK gets an article with ID.
-func SelectByPK(ctx context.Context, db *mydb.DB, id string) (*Article, error) {
-	key := map[string]types.AttributeValue{
-		"id": &types.AttributeValueMemberS{Value: id},
-	}
-	consistentRead := true
-	res, err := db.SelectByPK(ctx, tableName, key, consistentRead)
+// SelectByID gets an article with ID.
+func SelectByID(ctx context.Context, db *mydb.DB, id string) (*Article, error) {
+	items, err := SelectByIDs(ctx, db, []string{id})
 	if err != nil {
 		return nil, err
 	}
-	return NewArticleWithAttributeValue(res), nil
+	if len(items) == 0 {
+		return nil, nil
+	}
+	return items[0], nil
+}
+
+// SelectByIDs gets articles with IDs.
+func SelectByIDs(ctx context.Context, db *mydb.DB, ids []string) ([]*Article, error) {
+	items, err := db.SelectBySortKeys(ctx, tableName, partitionKey, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	articles := make([]*Article, len(items), len(items))
+	for i, item := range items {
+		articles[i] = NewArticleWithAttributeValue(item)
+	}
+	return articles, nil
 }
 
 // SelectAll gets all articles.
@@ -57,6 +70,16 @@ func Insert(ctx context.Context, db *mydb.DB, article *Article) (*Article, error
 		return nil, err
 	}
 	return NewArticleWithAttributeValue(item), nil
+}
+
+// UpsertMulti upserts articles.
+// This method doesn't automatically update as it's possible to update only tag.
+func UpsertMulti(ctx context.Context, db *mydb.DB, articles []*Article) error {
+	items := make([]map[string]types.AttributeValue, len(articles), len(articles))
+	for i, a := range articles {
+		items[i] = a.ToAttributeValue()
+	}
+	return db.UpsertMulti(ctx, tableName, items)
 }
 
 // DeleteByID deletes an article with id.
