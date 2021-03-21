@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/nasu/nasulog/domain/article"
-	"github.com/nasu/nasulog/domain/tag"
-	"github.com/nasu/nasulog/graph/generated"
-	"github.com/nasu/nasulog/graph/model"
+	"github.com/nasu/nasulog/api/domain/article"
+	"github.com/nasu/nasulog/api/domain/tag"
+	"github.com/nasu/nasulog/api/graph/generated"
+	"github.com/nasu/nasulog/api/graph/model"
 )
 
 func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArticle) (*model.Article, error) {

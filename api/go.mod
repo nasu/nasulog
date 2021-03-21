@@ -1,4 +1,4 @@
-module github.com/nasu/nasulog
+module github.com/nasu/nasulog/api
 
 go 1.15
 

@@ -3,7 +3,7 @@ package graph
 import (
 	"context"
 
-	"github.com/nasu/nasulog/infrastructure/dynamodb"
+	"github.com/nasu/nasulog/api/infrastructure/dynamodb"
 )
 
 // This file will not be regenerated automatically.

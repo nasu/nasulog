@@ -8,9 +8,9 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo/v4"
 
-	"github.com/nasu/nasulog/graph"
-	"github.com/nasu/nasulog/graph/generated"
-	"github.com/nasu/nasulog/infrastructure/dynamodb"
+	"github.com/nasu/nasulog/api/graph"
+	"github.com/nasu/nasulog/api/graph/generated"
+	"github.com/nasu/nasulog/api/infrastructure/dynamodb"
 )
 
 // Route sets echo route.

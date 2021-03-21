@@ -6,7 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
-	mydb "github.com/nasu/nasulog/infrastructure/dynamodb"
+	"github.com/nasu/nasulog/api/infrastructure/dynamodb"
 )
 
 type Repository struct {
