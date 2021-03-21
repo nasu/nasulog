@@ -74,6 +74,8 @@ func (r *mutationResolver) DeleteArticle(ctx context.Context, id string) (*bool,
 	if err != nil {
 		return nil, err
 	}
+	tagsShouldDelete := make([]*tag.Tag, 0)
+	tagsShouldUpdate := make([]*tag.Tag, 0)
 	for _, t := range tags {
 		for i, a := range t.Articles {
 			if a == id {
@@ -81,12 +83,20 @@ func (r *mutationResolver) DeleteArticle(ctx context.Context, id string) (*bool,
 				break
 			}
 		}
+		if len(t.Articles) == 0 {
+			tagsShouldDelete = append(tagsShouldDelete, t)
+		} else {
+			tagsShouldUpdate = append(tagsShouldUpdate, t)
+		}
 	}
 
 	if err := article.DeleteByID(ctx, r.DB, id); err != nil {
 		return nil, err
 	}
-	if err := tag.UpsertMulti(ctx, r.DB, tags); err != nil {
+	if err := tag.UpsertMulti(ctx, r.DB, tagsShouldUpdate); err != nil {
+		return nil, err
+	}
+	if err := tag.DeleteMulti(ctx, r.DB, tagsShouldDelete); err != nil {
 		return nil, err
 	}
 

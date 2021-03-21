@@ -69,11 +69,21 @@ func UpsertMulti(ctx context.Context, db *dynamodb.DB, tags []*Tag) error {
 	return db.UpsertMulti(ctx, tableName, items)
 }
 
-// DeleteByName deletes an article with name.
+// DeleteByName deletes a tag with name.
 func DeleteByName(ctx context.Context, db *dynamodb.DB, name string) error {
 	key := map[string]types.AttributeValue{
 		"partition_key": &types.AttributeValueMemberS{Value: partitionKey},
 		"sort_key":      &types.AttributeValueMemberS{Value: name},
 	}
 	return db.DeleteByPK(ctx, tableName, key)
+}
+
+// DeleteMulti deletes a tag with name.
+func DeleteMulti(ctx context.Context, db *dynamodb.DB, tags []*Tag) error {
+	for _, t := range tags {
+		if err := DeleteByName(ctx, db, t.Name); err != nil {
+			return nil
+		}
+	}
+	return nil
 }

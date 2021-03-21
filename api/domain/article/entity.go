@@ -67,7 +67,9 @@ func (article Article) ToAttributeValue() map[string]types.AttributeValue {
 	}
 	item["title"] = &types.AttributeValueMemberS{Value: article.Title}
 	item["content"] = &types.AttributeValueMemberS{Value: article.Content}
-	item["tags"] = &types.AttributeValueMemberSS{Value: article.Tags}
+	if len(article.Tags) != 0 {
+		item["tags"] = &types.AttributeValueMemberSS{Value: article.Tags}
+	}
 	item["created_at"] = &types.AttributeValueMemberS{Value: article.CreatedAt.Format(time.RFC3339)}
 	item["updated_at"] = &types.AttributeValueMemberS{Value: article.UpdatedAt.Format(time.RFC3339)}
 	return item

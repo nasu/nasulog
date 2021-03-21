@@ -29,6 +29,8 @@ func (tag Tag) ToAttributeValue() map[string]types.AttributeValue {
 	item := make(map[string]types.AttributeValue)
 	item["partition_key"] = &types.AttributeValueMemberS{Value: "tag"}
 	item["sort_key"] = &types.AttributeValueMemberS{Value: tag.Name}
-	item["articles"] = &types.AttributeValueMemberSS{Value: tag.Articles}
+	if len(tag.Articles) != 0 {
+		item["articles"] = &types.AttributeValueMemberSS{Value: tag.Articles}
+	}
 	return item
 }

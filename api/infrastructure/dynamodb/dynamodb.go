@@ -83,8 +83,11 @@ func (db DB) SelectAll(ctx context.Context, tableName, partitionKey string) ([]m
 
 // SelectBySortKeys gets data with partition_key and multi sort_key
 func (db DB) SelectBySortKeys(ctx context.Context, tableName, partitionKey string, sortKeys []string) ([]map[string]types.AttributeValue, error) {
-	params := []types.AttributeValue{&types.AttributeValueMemberS{Value: partitionKey}}
+	if len(sortKeys) == 0 {
+		return []map[string]types.AttributeValue{}, nil
+	}
 
+	params := []types.AttributeValue{&types.AttributeValueMemberS{Value: partitionKey}}
 	placeHolders := make([]string, len(sortKeys), len(sortKeys))
 	for i, key := range sortKeys {
 		placeHolders[i] = "?"
