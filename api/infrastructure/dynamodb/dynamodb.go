@@ -3,8 +3,6 @@ package dynamodb
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -22,17 +20,15 @@ var (
 	DYNAMODB_URL string
 )
 
-func init() {
-	if val, ok := os.LookupEnv("DYNAMODB_URL"); !ok {
-		log.Fatalln("require ENV:DYNAMODB_URL")
-	} else {
-		DYNAMODB_URL = val
-		log.Println("DYNAMODB_URL:" + DYNAMODB_URL)
-	}
+func InjectEndpointURL(url string) {
+	DYNAMODB_URL = url
 }
 
 // GetDB gets DB struct.
 func GetDB(ctx context.Context) (*DB, error) {
+	if DYNAMODB_URL == "" {
+		return nil, fmt.Errorf("Not found dynamodb endpoint.")
+	}
 	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
 		if service == dynamodb.ServiceID {
 			return aws.Endpoint{
