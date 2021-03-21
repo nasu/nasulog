@@ -9,14 +9,25 @@ import (
 	mydb "github.com/nasu/nasulog/infrastructure/dynamodb"
 )
 
-var tableName = "blog"
-var partitionKey = "article"
-var consistentRead = true
-var scanLimit = int32(10)
+type Repository struct {
+	tableName    string
+	partitionKey string
+	ctx          context.Context
+	db           *dynamodb.DB
+}
+
+func NewRepositoryWithContextAndDB(ctx context.Context, db *dynamodb.DB) *Repository {
+	return &Repository{
+		tableName:    "blog",
+		partitionKey: "article",
+		ctx:          ctx,
+		db:           db,
+	}
+}
 
 // SelectByID gets an article with ID.
-func SelectByID(ctx context.Context, db *mydb.DB, id string) (*Article, error) {
-	items, err := SelectByIDs(ctx, db, []string{id})
+func (r *Repository) SelectByID(id string) (*Article, error) {
+	items, err := r.SelectByIDs([]string{id})
 	if err != nil {
 		return nil, err
 	}
@@ -27,8 +38,8 @@ func SelectByID(ctx context.Context, db *mydb.DB, id string) (*Article, error) {
 }
 
 // SelectByIDs gets articles with IDs.
-func SelectByIDs(ctx context.Context, db *mydb.DB, ids []string) ([]*Article, error) {
-	items, err := db.SelectBySortKeys(ctx, tableName, partitionKey, ids)
+func (r *Repository) SelectByIDs(ids []string) ([]*Article, error) {
+	items, err := r.db.SelectBySortKeys(r.ctx, r.tableName, r.partitionKey, ids)
 	if err != nil {
 		return nil, err
 	}
@@ -41,8 +52,8 @@ func SelectByIDs(ctx context.Context, db *mydb.DB, ids []string) ([]*Article, er
 }
 
 // SelectAll gets all articles.
-func SelectAll(ctx context.Context, db *mydb.DB) ([]*Article, error) {
-	items, err := db.SelectAll(ctx, tableName, partitionKey)
+func (r *Repository) SelectAll() ([]*Article, error) {
+	items, err := r.db.SelectAll(r.ctx, r.tableName, r.partitionKey)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +66,7 @@ func SelectAll(ctx context.Context, db *mydb.DB) ([]*Article, error) {
 }
 
 // Insert inserts an article to DB.
-func Insert(ctx context.Context, db *mydb.DB, article *Article) (*Article, error) {
+func (r *Repository) Insert(article *Article) (*Article, error) {
 	now := time.Now()
 	if article.CreatedAt.IsZero() {
 		article.CreatedAt = now
@@ -65,7 +76,7 @@ func Insert(ctx context.Context, db *mydb.DB, article *Article) (*Article, error
 	}
 
 	item := article.ToAttributeValue()
-	err := db.Insert(ctx, tableName, item)
+	err := r.db.Insert(r.ctx, r.tableName, item)
 	if err != nil {
 		return nil, err
 	}
@@ -74,19 +85,19 @@ func Insert(ctx context.Context, db *mydb.DB, article *Article) (*Article, error
 
 // UpsertMulti upserts articles.
 // This method doesn't automatically update as it's possible to update only tag.
-func UpsertMulti(ctx context.Context, db *mydb.DB, articles []*Article) error {
+func (r *Repository) UpsertMulti(articles []*Article) error {
 	items := make([]map[string]types.AttributeValue, len(articles), len(articles))
 	for i, a := range articles {
 		items[i] = a.ToAttributeValue()
 	}
-	return db.UpsertMulti(ctx, tableName, items)
+	return r.db.UpsertMulti(r.ctx, r.tableName, items)
 }
 
 // DeleteByID deletes an article with id.
-func DeleteByID(ctx context.Context, db *mydb.DB, id string) error {
+func (r *Repository) DeleteByID(id string) error {
 	key := map[string]types.AttributeValue{
-		"partition_key": &types.AttributeValueMemberS{Value: partitionKey},
+		"partition_key": &types.AttributeValueMemberS{Value: r.partitionKey},
 		"sort_key":      &types.AttributeValueMemberS{Value: id},
 	}
-	return db.DeleteByPK(ctx, tableName, key)
+	return r.db.DeleteByPK(r.ctx, r.tableName, key)
 }

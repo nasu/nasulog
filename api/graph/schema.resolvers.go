@@ -15,8 +15,11 @@ import (
 )
 
 func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArticle) (*model.Article, error) {
+	repoArticle := article.NewRepositoryWithContextAndDB(ctx, r.DB)
+	repoTag := tag.NewRepositoryWithContextAndDB(ctx, r.DB)
+
 	//TODO: transaction
-	entity, err := article.Insert(ctx, r.DB, &article.Article{
+	entity, err := repoArticle.Insert(&article.Article{
 		ID:      uuid.NewString(),
 		Title:   input.Title,
 		Content: input.Content,
@@ -26,7 +29,7 @@ func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArt
 		return nil, err
 	}
 
-	tags, err := tag.SelectByNames(ctx, r.DB, input.Tags)
+	tags, err := repoTag.SelectByNames(input.Tags)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +48,7 @@ func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArt
 		}
 	}
 
-	if err := tag.InsertMulti(ctx, r.DB, tags); err != nil {
+	if err := repoTag.InsertMulti(tags); err != nil {
 		return nil, err
 	}
 
@@ -60,7 +63,10 @@ func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArt
 }
 
 func (r *mutationResolver) DeleteArticle(ctx context.Context, id string) (*bool, error) {
-	entity, err := article.SelectByID(ctx, r.DB, id)
+	repoArticle := article.NewRepositoryWithContextAndDB(ctx, r.DB)
+	repoTag := tag.NewRepositoryWithContextAndDB(ctx, r.DB)
+
+	entity, err := repoArticle.SelectByID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +76,7 @@ func (r *mutationResolver) DeleteArticle(ctx context.Context, id string) (*bool,
 	}
 
 	// Remove an article matched to the article from tag.articles
-	tags, err := tag.SelectByNames(ctx, r.DB, entity.Tags)
+	tags, err := repoTag.SelectByNames(entity.Tags)
 	if err != nil {
 		return nil, err
 	}
@@ -90,13 +96,13 @@ func (r *mutationResolver) DeleteArticle(ctx context.Context, id string) (*bool,
 		}
 	}
 
-	if err := article.DeleteByID(ctx, r.DB, id); err != nil {
+	if err := repoArticle.DeleteByID(id); err != nil {
 		return nil, err
 	}
-	if err := tag.UpsertMulti(ctx, r.DB, tagsShouldUpdate); err != nil {
+	if err := repoTag.UpsertMulti(tagsShouldUpdate); err != nil {
 		return nil, err
 	}
-	if err := tag.DeleteMulti(ctx, r.DB, tagsShouldDelete); err != nil {
+	if err := repoTag.DeleteMulti(tagsShouldDelete); err != nil {
 		return nil, err
 	}
 
@@ -105,7 +111,10 @@ func (r *mutationResolver) DeleteArticle(ctx context.Context, id string) (*bool,
 }
 
 func (r *mutationResolver) DeleteTag(ctx context.Context, name string) (*bool, error) {
-	entity, err := tag.SelectByName(ctx, r.DB, name)
+	repoArticle := article.NewRepositoryWithContextAndDB(ctx, r.DB)
+	repoTag := tag.NewRepositoryWithContextAndDB(ctx, r.DB)
+
+	entity, err := repoTag.SelectByName(name)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +124,7 @@ func (r *mutationResolver) DeleteTag(ctx context.Context, name string) (*bool, e
 	}
 
 	// Remove a tag matched to the tag from article.tags
-	articles, err := article.SelectByIDs(ctx, r.DB, entity.Articles)
+	articles, err := repoArticle.SelectByIDs(entity.Articles)
 	if err != nil {
 		return nil, err
 	}
@@ -129,10 +138,10 @@ func (r *mutationResolver) DeleteTag(ctx context.Context, name string) (*bool, e
 	}
 
 	// transaction
-	if err := tag.DeleteByName(ctx, r.DB, name); err != nil {
+	if err := repoTag.DeleteByName(name); err != nil {
 		return nil, err
 	}
-	if err := article.UpsertMulti(ctx, r.DB, articles); err != nil {
+	if err := repoArticle.UpsertMulti(articles); err != nil {
 		return nil, err
 	}
 
@@ -141,7 +150,8 @@ func (r *mutationResolver) DeleteTag(ctx context.Context, name string) (*bool, e
 }
 
 func (r *queryResolver) Articles(ctx context.Context) ([]*model.Article, error) {
-	entities, err := article.SelectAll(ctx, r.DB)
+	repo := article.NewRepositoryWithContextAndDB(ctx, r.DB)
+	entities, err := repo.SelectAll()
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +170,8 @@ func (r *queryResolver) Articles(ctx context.Context) ([]*model.Article, error) 
 }
 
 func (r *queryResolver) Tags(ctx context.Context) ([]*model.Tag, error) {
-	entities, err := tag.SelectAll(ctx, r.DB)
+	repo := tag.NewRepositoryWithContextAndDB(ctx, r.DB)
+	entities, err := repo.SelectAll()
 	if err != nil {
 		return nil, err
 	}

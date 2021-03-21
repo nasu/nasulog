@@ -8,12 +8,25 @@ import (
 	"github.com/nasu/nasulog/infrastructure/dynamodb"
 )
 
-var tableName = "blog"
-var partitionKey = "tag"
+type Repository struct {
+	tableName    string
+	partitionKey string
+	ctx          context.Context
+	db           *dynamodb.DB
+}
+
+func NewRepositoryWithContextAndDB(ctx context.Context, db *dynamodb.DB) *Repository {
+	return &Repository{
+		tableName:    "blog",
+		partitionKey: "tag",
+		ctx:          ctx,
+		db:           db,
+	}
+}
 
 // SelectAll gets all tags.
-func SelectAll(ctx context.Context, db *dynamodb.DB) ([]*Tag, error) {
-	items, err := db.SelectAll(ctx, tableName, partitionKey)
+func (r *Repository) SelectAll() ([]*Tag, error) {
+	items, err := r.db.SelectAll(r.ctx, r.tableName, r.partitionKey)
 	if err != nil {
 		return nil, err
 	}
@@ -26,8 +39,8 @@ func SelectAll(ctx context.Context, db *dynamodb.DB) ([]*Tag, error) {
 }
 
 // SelectByName gets tags with name.
-func SelectByName(ctx context.Context, db *dynamodb.DB, name string) (*Tag, error) {
-	tags, err := SelectByNames(ctx, db, []string{name})
+func (r *Repository) SelectByName(name string) (*Tag, error) {
+	tags, err := r.SelectByNames([]string{name})
 	if err != nil {
 		return nil, err
 	}
@@ -38,8 +51,8 @@ func SelectByName(ctx context.Context, db *dynamodb.DB, name string) (*Tag, erro
 }
 
 // SelectByNames gets tags with names.
-func SelectByNames(ctx context.Context, db *dynamodb.DB, names []string) ([]*Tag, error) {
-	items, err := db.SelectBySortKeys(ctx, tableName, partitionKey, names)
+func (r *Repository) SelectByNames(names []string) ([]*Tag, error) {
+	items, err := r.db.SelectBySortKeys(r.ctx, r.tableName, r.partitionKey, names)
 	if err != nil {
 		return nil, err
 	}
@@ -52,36 +65,36 @@ func SelectByNames(ctx context.Context, db *dynamodb.DB, names []string) ([]*Tag
 }
 
 // InsertMulti inserts all tags received.
-func InsertMulti(ctx context.Context, db *dynamodb.DB, tags []*Tag) error {
+func (r *Repository) InsertMulti(tags []*Tag) error {
 	items := make([]map[string]types.AttributeValue, len(tags), len(tags))
 	for i, t := range tags {
 		items[i] = t.ToAttributeValue()
 	}
-	return db.UpsertMulti(ctx, tableName, items)
+	return r.db.UpsertMulti(r.ctx, r.tableName, items)
 }
 
 // UpsertMulti upserts tags.
-func UpsertMulti(ctx context.Context, db *dynamodb.DB, tags []*Tag) error {
+func (r *Repository) UpsertMulti(tags []*Tag) error {
 	items := make([]map[string]types.AttributeValue, len(tags), len(tags))
 	for i, t := range tags {
 		items[i] = t.ToAttributeValue()
 	}
-	return db.UpsertMulti(ctx, tableName, items)
+	return r.db.UpsertMulti(r.ctx, r.tableName, items)
 }
 
 // DeleteByName deletes a tag with name.
-func DeleteByName(ctx context.Context, db *dynamodb.DB, name string) error {
+func (r *Repository) DeleteByName(name string) error {
 	key := map[string]types.AttributeValue{
-		"partition_key": &types.AttributeValueMemberS{Value: partitionKey},
+		"partition_key": &types.AttributeValueMemberS{Value: r.partitionKey},
 		"sort_key":      &types.AttributeValueMemberS{Value: name},
 	}
-	return db.DeleteByPK(ctx, tableName, key)
+	return r.db.DeleteByPK(r.ctx, r.tableName, key)
 }
 
 // DeleteMulti deletes a tag with name.
-func DeleteMulti(ctx context.Context, db *dynamodb.DB, tags []*Tag) error {
+func (r *Repository) DeleteMulti(tags []*Tag) error {
 	for _, t := range tags {
-		if err := DeleteByName(ctx, db, t.Name); err != nil {
+		if err := r.DeleteByName(t.Name); err != nil {
 			return nil
 		}
 	}
