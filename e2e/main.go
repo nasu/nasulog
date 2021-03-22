@@ -15,8 +15,67 @@ import (
 func main() {
 	api := flag.String("api", "", "an api URL which should be inspected.")
 	flag.Parse()
-	art := createArticle(*api)
-	log.Println(art)
+	case1(*api)
+	case2(*api)
+	case3(*api)
+}
+
+/*
+  1. Create an article
+	2. Get the article
+	3. Get a tag created in the above
+	4. Update the article
+	5. Get the article - confirm if the article is exactly changed
+	6. Delete the tag
+	7. Delete the article
+*/
+func case1(api string) {
+	art := createArticle(api)
+	articleByCondition(api, art.ID)
+	tag(api, art.Tags[0])
+	art = updateArticle(api)
+	articleByCondition(api, art.ID)
+	tag(api, art.Tags[0])
+	deleteTag(api, art.Tags[0])
+	deleteArticle(api, art)
+}
+
+/*
+  1. Create an article
+  2. Create another article which has same tag
+	3. Delete the article of 1 - tag will not be deleted at the same time
+	4. Delete the article of 2 - tag will be deleted too at the same time
+*/
+func case2(api string) {
+	art1 := createArticle(api)
+	art2 := createArticle(api)
+	deleteArticle(api, art1)
+	deleteArticle(api, art2)
+}
+
+/*
+	1. Get all articles
+	2. Get all tags
+*/
+func case3(api string) {
+	articles(api)
+	tags(api)
+}
+
+func articles(api string) {
+
+}
+
+func articleByCondition(api, id string) {
+
+}
+
+func tags(api string) {
+
+}
+
+func tag(api, name string) {
+
 }
 
 func createArticle(api string) *article.Article {
@@ -68,6 +127,18 @@ func createArticle(api string) *article.Article {
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}
+}
+
+func updateArticle(api string) *article.Article {
+	return &article.Article{}
+}
+
+func deleteArticle(api string, art *article.Article) {
+
+}
+
+func deleteTag(api, name string) {
+
 }
 
 func validate(resp *http.Response, method string) map[string]interface{} {

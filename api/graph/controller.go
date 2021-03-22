@@ -1,4 +1,4 @@
-package graphql
+package graph
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo/v4"
 
-	"github.com/nasu/nasulog/api/graph"
 	"github.com/nasu/nasulog/api/graph/generated"
 	"github.com/nasu/nasulog/api/infrastructure/dynamodb"
 )
@@ -28,7 +27,7 @@ func Route(e *echo.Echo) {
 	}
 	graphqlHandler := handler.NewDefaultServer(
 		generated.NewExecutableSchema(
-			generated.Config{Resolvers: &graph.Resolver{
+			generated.Config{Resolvers: &Resolver{
 				Ctx: ctx,
 				DB:  db,
 			}},

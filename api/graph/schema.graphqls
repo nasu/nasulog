@@ -12,9 +12,15 @@ type Tag {
   articles: [String!]!
 }
 
+input ArticleCondition {
+  tag: String
+}
+
 type Query {
-  articles: [Article!]!
+  articles(cond: ArticleCondition): [Article!]!
+  article(id: ID!): Article
   tags: [Tag!]!
+  tag(name:ID!): Tag
 }
 
 input NewArticle {
@@ -23,8 +29,16 @@ input NewArticle {
   tags: [String!]
 }
 
+input UpdateArticle {
+  id: ID!
+  title: String!
+  content: String!
+  tags: [String!]!
+}
+
 type Mutation {
   createArticle(input: NewArticle!): Article!
+  updateArticle(input: UpdateArticle!): Article!
   deleteArticle(id: String!): Boolean
   deleteTag(name: String!): Boolean
 }
