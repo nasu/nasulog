@@ -66,14 +66,12 @@ func (r *Repository) SelectAll() ([]*Article, error) {
 }
 
 // Insert inserts an article to DB.
-func (r *Repository) Insert(article *Article) (*Article, error) {
+func (r *Repository) Upsert(article *Article) (*Article, error) {
 	now := time.Now()
 	if article.CreatedAt.IsZero() {
 		article.CreatedAt = now
 	}
-	if article.UpdatedAt.IsZero() {
-		article.UpdatedAt = now
-	}
+	article.UpdatedAt = now
 
 	item := article.ToAttributeValue()
 	err := r.db.Insert(r.ctx, r.tableName, item)

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/google/uuid"
 )
 
 // Article is an entity of an article.
@@ -60,11 +59,7 @@ func NewArticleWithAttributeValue(values map[string]types.AttributeValue) *Artic
 func (article Article) ToAttributeValue() map[string]types.AttributeValue {
 	item := make(map[string]types.AttributeValue)
 	item["partition_key"] = &types.AttributeValueMemberS{Value: "article"}
-	if article.ID == "" {
-		item["sort_key"] = &types.AttributeValueMemberS{Value: uuid.NewString()}
-	} else {
-		item["sort_key"] = &types.AttributeValueMemberS{Value: article.ID}
-	}
+	item["sort_key"] = &types.AttributeValueMemberS{Value: article.ID}
 	item["title"] = &types.AttributeValueMemberS{Value: article.Title}
 	item["content"] = &types.AttributeValueMemberS{Value: article.Content}
 	if len(article.Tags) != 0 {

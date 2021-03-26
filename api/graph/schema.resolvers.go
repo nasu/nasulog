@@ -5,19 +5,14 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/nasu/nasulog/api/graph/generated"
 	"github.com/nasu/nasulog/api/graph/model"
 	"github.com/nasu/nasulog/api/graph/presenter"
 )
 
-func (r *mutationResolver) CreateArticle(ctx context.Context, input model.NewArticle) (*model.Article, error) {
-	return presenter.CreateArticle(ctx, r.DB, &input)
-}
-
-func (r *mutationResolver) UpdateArticle(ctx context.Context, input model.UpdateArticle) (*model.Article, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) PostArticle(ctx context.Context, input model.PostArticle) (*model.Article, error) {
+	return presenter.PostArticle(ctx, r.DB, &input)
 }
 
 func (r *mutationResolver) DeleteArticle(ctx context.Context, id string) (*bool, error) {
@@ -33,7 +28,7 @@ func (r *queryResolver) Articles(ctx context.Context, cond *model.ArticleConditi
 }
 
 func (r *queryResolver) Article(ctx context.Context, id string) (*model.Article, error) {
-	panic(fmt.Errorf("not implemented"))
+	return presenter.GetArticle(ctx, r.DB, id)
 }
 
 func (r *queryResolver) Tags(ctx context.Context) ([]*model.Tag, error) {
@@ -41,7 +36,7 @@ func (r *queryResolver) Tags(ctx context.Context) ([]*model.Tag, error) {
 }
 
 func (r *queryResolver) Tag(ctx context.Context, name string) (*model.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	return presenter.GetTag(ctx, r.DB, name)
 }
 
 // Mutation returns generated.MutationResolver implementation.

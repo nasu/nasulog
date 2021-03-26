@@ -23,22 +23,15 @@ type Query {
   tag(name:ID!): Tag
 }
 
-input NewArticle {
+input PostArticle {
+  id: ID
   title: String!
   content: String!
   tags: [String!]
 }
 
-input UpdateArticle {
-  id: ID!
-  title: String!
-  content: String!
-  tags: [String!]!
-}
-
 type Mutation {
-  createArticle(input: NewArticle!): Article!
-  updateArticle(input: UpdateArticle!): Article!
+  postArticle(input: PostArticle!): Article!
   deleteArticle(id: String!): Boolean
   deleteTag(name: String!): Boolean
 }

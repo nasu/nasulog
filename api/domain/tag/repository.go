@@ -8,6 +8,10 @@ import (
 	"github.com/nasu/nasulog/api/infrastructure/dynamodb"
 )
 
+type IRepository interface {
+	SelectByNames(name []string) ([]*Tag, error)
+}
+
 type Repository struct {
 	tableName    string
 	partitionKey string
@@ -62,15 +66,6 @@ func (r *Repository) SelectByNames(names []string) ([]*Tag, error) {
 		tags[i] = NewTagWithAttributeValue(item)
 	}
 	return tags, nil
-}
-
-// InsertMulti inserts all tags received.
-func (r *Repository) InsertMulti(tags []*Tag) error {
-	items := make([]map[string]types.AttributeValue, len(tags), len(tags))
-	for i, t := range tags {
-		items[i] = t.ToAttributeValue()
-	}
-	return r.db.UpsertMulti(r.ctx, r.tableName, items)
 }
 
 // UpsertMulti upserts tags.
