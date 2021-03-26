@@ -63,7 +63,17 @@ func case3(api string) {
 }
 
 func articles(api string) {
-
+	query := `{ articles {id, title, tags} }`
+	resp, err := post(api, payload(query))
+	if err != nil {
+		log.Fatalf("articles:post: err=%s", err)
+	}
+	defer resp.Body.Close()
+	data := validate(resp, "articles")
+	log.Println("articles:", data)
+	if _, ok := data["articles"]; !ok {
+		log.Fatalf("articles:not found articles")
+	}
 }
 
 func articleByCondition(api, id string) {
@@ -71,7 +81,17 @@ func articleByCondition(api, id string) {
 }
 
 func tags(api string) {
-
+	query := `{ tags {name, articles} }`
+	resp, err := post(api, payload(query))
+	if err != nil {
+		log.Fatalf("tags:post: err=%s", err)
+	}
+	defer resp.Body.Close()
+	data := validate(resp, "tags")
+	log.Println("articles:", data)
+	if _, ok := data["tags"]; !ok {
+		log.Fatalf("tags:not found tags")
+	}
 }
 
 func tag(api, name string) {
@@ -120,10 +140,15 @@ func createArticle(api string) *article.Article {
 	if err != nil {
 		log.Fatalf("createArticle:failed time parse. erro=%s", err)
 	}
+	tags := make([]string, 0, 0)
+	for _, t := range art["tags"].([]interface{}) {
+		tags = append(tags, t.(string))
+	}
 	return &article.Article{
 		ID:        art["id"].(string),
 		Title:     art["title"].(string),
 		Content:   art["content"].(string),
+		Tags:      tags,
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}
