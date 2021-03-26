@@ -3,7 +3,7 @@ set -ex
 DYNAMODB_ENDPOINT=$1
 aws dynamodb create-table --endpoint-url ${DYNAMODB_ENDPOINT} \
   --billing-mode PAY_PER_REQUEST \
-  --table-name blog \
+  --table-name nasulog \
   --attribute-definitions \
     AttributeName=partition_key,AttributeType=S \
     AttributeName=sort_key,AttributeType=S \

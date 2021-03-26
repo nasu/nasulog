@@ -18,7 +18,7 @@ type Repository struct {
 
 func NewRepositoryWithContextAndDB(ctx context.Context, db *dynamodb.DB) *Repository {
 	return &Repository{
-		tableName:    "blog",
+		tableName:    "nasulog",
 		partitionKey: "article",
 		ctx:          ctx,
 		db:           db,
