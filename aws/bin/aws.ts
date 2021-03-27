@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
-import { NasulogInitStack } from '../lib/aws-stack';
+import { NasulogInitStack } from '../lib/nasulog-stack';
 
 const app = new cdk.App();
 new NasulogInitStack(app, 'NasulogInitStack', {

@@ -17,34 +17,48 @@ type DB struct {
 }
 
 var (
-	DYNAMODB_URL string
+	DYNAMODB_URL    string
+	DYNAMODB_REGION string
 )
 
-func InjectEndpointURL(url string) {
+func InjectConstant(url, region string) {
 	DYNAMODB_URL = url
+	DYNAMODB_REGION = region
+	if DYNAMODB_REGION == "" {
+		DYNAMODB_REGION = "ap-northeast-1"
+	}
 }
 
 // GetDB gets DB struct.
 func GetDB(ctx context.Context) (*DB, error) {
-	if DYNAMODB_URL == "" {
-		return nil, fmt.Errorf("Not found dynamodb endpoint.")
-	}
-	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-		if service == dynamodb.ServiceID {
-			return aws.Endpoint{
-				URL: DYNAMODB_URL,
-			}, nil
+	var cfg aws.Config
+	if DYNAMODB_URL != "" {
+		// basically for local
+		resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+			if service == dynamodb.ServiceID {
+				return aws.Endpoint{
+					URL: DYNAMODB_URL,
+				}, nil
+			}
+			return aws.Endpoint{}, &aws.EndpointNotFoundError{}
+		})
+		var err error
+		cfg, err = config.LoadDefaultConfig(ctx,
+			config.WithEndpointResolver(resolver),
+		)
+		if err != nil {
+			return nil, err
 		}
-		return aws.Endpoint{}, &aws.EndpointNotFoundError{}
-	})
-
-	cfg, err := config.LoadDefaultConfig(ctx,
-		config.WithRegion("ap-norteast-1"),
-		config.WithEndpointResolver(resolver),
-	)
-	if err != nil {
-		return nil, err
+	} else {
+		var err error
+		cfg, err = config.LoadDefaultConfig(ctx,
+			config.WithRegion(DYNAMODB_REGION),
+		)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	return &DB{dynamodb.NewFromConfig(cfg)}, nil
 }
 

@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -74,6 +75,9 @@ func PostArticle(ctx context.Context, db *dynamodb.DB, input *model.PostArticle)
 		art, err = repoArticle.SelectByID(*input.ID)
 		if err != nil {
 			return nil, err
+		}
+		if art == nil {
+			return nil, fmt.Errorf("not found the article. id=%s", *input.ID)
 		}
 		oldTags = art.Tags
 		art.Title = input.Title

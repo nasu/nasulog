@@ -12,12 +12,11 @@ import (
 )
 
 func init() {
-	if val, ok := os.LookupEnv("DYNAMODB_URL"); !ok {
-		log.Fatalln("require ENV:DYNAMODB_URL")
-	} else {
-		dynamodb.InjectEndpointURL(val)
-		log.Println("DYNAMODB_URL:" + val)
-	}
+	url, _ := os.LookupEnv("DYNAMODB_URL")
+	region, _ := os.LookupEnv("DYNAMODB_REGION")
+	dynamodb.InjectConstant(url, region)
+	log.Println("DYNAMODB_URL:" + dynamodb.DYNAMODB_URL)
+	log.Println("DYNAMODB_REGION:" + dynamodb.DYNAMODB_REGION)
 }
 
 func main() {
